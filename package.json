@@ -1,0 +1,63 @@
+{
+  "name": "wow-game",
+  "version": "1.0.0",
+  "description": "Plataforma de Gamificação Moderna - Sistema completo com frontend React/Next.js e backend Node.js",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && npm start",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && npm test",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "setup": "npm install && npm run setup:backend && npm run setup:frontend",
+    "setup:frontend": "cd frontend && npm install",
+    "setup:backend": "cd backend && npm install",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "db:migrate": "cd backend && npm run db:migrate",
+    "db:seed": "cd backend && npm run db:seed",
+    "db:reset": "cd backend && npm run db:reset"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "gamification",
+    "react",
+    "nextjs",
+    "nodejs",
+    "express",
+    "typescript",
+    "postgresql",
+    "prisma",
+    "chakra-ui",
+    "jwt",
+    "docker"
+  ],
+  "author": "Gabriel W. Petermann",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GabrielWPetermann/WOW-GAME.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GabrielWPetermann/WOW-GAME/issues"
+  },
+  "homepage": "https://github.com/GabrielWPetermann/WOW-GAME#readme"
+}

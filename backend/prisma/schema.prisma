@@ -1,0 +1,213 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  firstName String
+  lastName  String
+  password  String?
+  
+  // OAuth fields
+  googleId  String?  @unique
+  githubId  String?  @unique
+  
+  // Game stats
+  level        Int      @default(1)
+  currentXP    Int      @default(0)
+  totalXP      Int      @default(0)
+  
+  // Profile
+  avatar       String?
+  isEmailVerified Boolean @default(false)
+  emailVerificationToken String?
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLoginAt DateTime?
+  
+  // Relations
+  character     Character?
+  userMissions  UserMission[]
+  achievements  UserAchievement[]
+  streaks       UserStreak[]
+  
+  @@map("users")
+}
+
+model Character {
+  id     String @id @default(cuid())
+  userId String @unique
+  name   String
+  sprite String @default("default")
+  
+  // 8-bit character customization
+  hairType    String @default("short")
+  hairColor   String @default("#8B4513")
+  eyeType     String @default("normal")
+  eyeColor    String @default("#4169E1")
+  skinColor   String @default("#FDBCB4")
+  shirtType   String @default("basic")
+  shirtColor  String @default("#FF0000")
+  pantsType   String @default("basic")
+  pantsColor  String @default("#0000FF")
+  shoesType   String @default("sneakers")
+  shoesColor  String @default("#000000")
+  
+  // Accessories
+  hat         String?
+  glasses     String?
+  weapon      String?
+  shield      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("characters")
+}
+
+model Mission {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  difficulty  MissionDifficulty @default(EASY)
+  xpReward    Int
+  
+  // Progress tracking
+  maxProgress Int      @default(1)
+  deadline    DateTime?
+  
+  // Status
+  isActive    Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  userMissions UserMission[]
+  
+  @@map("missions")
+}
+
+model UserMission {
+  id        String   @id @default(cuid())
+  userId    String
+  missionId String
+  
+  status    MissionStatus @default(PENDING)
+  progress  Int           @default(0)
+  
+  startedAt   DateTime?
+  completedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, missionId])
+  @@map("user_missions")
+}
+
+model Level {
+  level       Int    @id
+  title       String
+  description String
+  requiredXP  Int
+  
+  // Rewards
+  badgeIcon   String?
+  badgeColor  String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("levels")
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  category    String
+  
+  // Requirements
+  requirement String // JSON string with requirements
+  xpReward    Int    @default(0)
+  
+  isActive Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  userAchievements UserAchievement[]
+  
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String @id @default(cuid())
+  userId        String
+  achievementId String
+  
+  unlockedAt DateTime @default(now())
+  
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model UserStreak {
+  id       String @id @default(cuid())
+  userId   String
+  date     DateTime @db.Date
+  missions Int      @default(0)
+  xpGained Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, date])
+  @@map("user_streaks")
+}
+
+// Enums
+enum MissionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+  EPIC
+}
+
+enum MissionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}

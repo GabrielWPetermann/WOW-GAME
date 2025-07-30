@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: wowgame-db
+    environment:
+      POSTGRES_DB: wowgame
+      POSTGRES_USER: wowuser
+      POSTGRES_PASSWORD: wowpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wowgame-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wowgame-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://wowuser:wowpassword@db:5432/wowgame
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_REFRESH_SECRET: your-refresh-secret-change-in-production
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    networks:
+      - wowgame-network
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: wowgame-frontend
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - wowgame-network
+
+volumes:
+  postgres_data:
+
+networks:
+  wowgame-network:
+    driver: bridge
